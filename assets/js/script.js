@@ -41,13 +41,29 @@ function displayQuizData() {
             <p>${index + 1}. ${quiz.question}</p>
             <ul>
                 ${quiz.options.map((option, optionIndex) => `
-                    <li>${option}</li>
+                    <li onclick="checkAnswer(${index}, ${optionIndex})">${option}</li>
                 `).join('')}
             </ul>
         `;
         // クイズコンテナにクイズ要素を追加
         quizContainer.appendChild(quizElement);
     });
+}
+
+
+// 正誤判定を行う関数
+function checkAnswer(quizIndex, optionIndex) {
+    // 選択された選択肢を取得
+    const selectedOption = quizData[quizIndex].options[optionIndex];
+    // 正解を取得
+    const correctAnswer = quizData[quizIndex].answer;
+
+    // 選択された選択肢が正解かどうかをチェック
+    if (selectedOption === correctAnswer) {
+        alert('正解！');  // 正解の場合、'正解！'とアラート表示
+    } else {
+        alert('不正解。正解は ' + correctAnswer + ' です。');  // 不正解の場合、正解を表示
+    }
 }
 
 // クイズデータを表示するボタンを設定
