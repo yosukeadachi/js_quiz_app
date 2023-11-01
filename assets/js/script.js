@@ -13,6 +13,9 @@ const quizData = [
     // 参加者はここに新しいクイズデータを追加できます...
 ];
 
+let currentQuizIndex = 0;
+let correctAnswers = 0;
+
 // 配列をランダムに並べ替える関数
 function shuffleArray(array) {
     // 配列の最後の要素から順に処理を行います
@@ -28,44 +31,66 @@ function shuffleArray(array) {
 function displayQuizData() {
     // quiz-containerというIDを持つ要素を取得
     const quizContainer = document.getElementById('quiz-container');
+    const quiz = quizData[currentQuizIndex];
+    shuffleArray(quiz.options);
+    const quizElement = document.createElement('div');
+    quizElement.className = 'quiz';
+    quizElement.innerHTML = `
+        <p>${currentQuizIndex + 1}. ${quiz.question}</p>
+        <ul>
+            ${quiz.options.map((option, optionIndex) => `
+                <li onclick="checkAnswer(${optionIndex})">${option}</li>
+            `).join('')}
+        </ul>
+    `;
     quizContainer.innerHTML = '';  // クイズコンテナをクリア
+    quizContainer.appendChild(quizElement);
 
-    // 各クイズデータに対して処理を行います
-    quizData.forEach((quiz, index) => {
-        // 選択肢をシャッフル
-        shuffleArray(quiz.options);
-        // 新しいdiv要素を作成
-        const quizElement = document.createElement('div');
-        quizElement.className = 'quiz';  // クラス名を設定
-        quizElement.innerHTML = `
-            <p>${index + 1}. ${quiz.question}</p>
-            <ul>
-                ${quiz.options.map((option, optionIndex) => `
-                    <li onclick="checkAnswer(${index}, ${optionIndex})">${option}</li>
-                `).join('')}
-            </ul>
-        `;
-        // クイズコンテナにクイズ要素を追加
-        quizContainer.appendChild(quizElement);
-    });
+    // 進捗バーを更新
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = ((currentQuizIndex / quizData.length) * 100) + '%';
 }
 
 
 // 正誤判定を行う関数
-function checkAnswer(quizIndex, optionIndex) {
+function checkAnswer(optionIndex) {
     // 選択された選択肢を取得
-    const selectedOption = quizData[quizIndex].options[optionIndex];
+    const selectedOption = quizData[currentQuizIndex].options[optionIndex];
     // 正解を取得
-    const correctAnswer = quizData[quizIndex].answer;
+    const correctAnswer = quizData[currentQuizIndex].answer;
 
     // 選択された選択肢が正解かどうかをチェック
     if (selectedOption === correctAnswer) {
-        alert('正解！');  // 正解の場合、'正解！'とアラート表示
+        alert('正解！');
+        correctAnswers++;
     } else {
-        alert('不正解。正解は ' + correctAnswer + ' です。');  // 不正解の場合、正解を表示
+        alert('不正解…');
+    }
+    currentQuizIndex++;
+    // スコアを更新
+    document.getElementById('score').textContent = `Score: ${correctAnswers}/${quizData.length}`;
+    if (currentQuizIndex < quizData.length) {
+        displayQuizData();
+    } else {
+        alert(`成績: ${correctAnswers}/${quizData.length}`);
+        document.getElementById('retry-button').style.display = 'block';
     }
 }
 
-// クイズデータを表示するボタンを設定
-const displayButton = document.getElementById('display-button');
-displayButton.addEventListener('click', displayQuizData);  // クリックイベントを設定
+function retryQuiz() {
+    currentQuizIndex = 0;
+    correctAnswers = 0;
+    document.getElementById('score').textContent = `Score: 0/0`;
+    document.getElementById('retry-button').style.display = 'none';
+    displayQuizData();
+}
+
+document.getElementById('display-button').addEventListener('click', displayQuizData);
+document.getElementById('retry-button').addEventListener('click', retryQuiz);
+
+window.onload = function() {
+    // ページが読み込まれたときにスコアを初期化
+    document.getElementById('score').textContent = `Score: 0/${quizData.length}`;
+    // スコア要素を表示
+    document.getElementById('score').style.display = 'block';
+};
